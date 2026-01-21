@@ -453,6 +453,12 @@ const OfferLetterDocument = ({ data }: { data: OfferLetterData }) => {
               <Text style={styles.tableCell}>{fmtMoney(data.salaryBreakdown.hra)}</Text>
               <Text style={styles.tableCell}>{fmtMoney(data.salaryBreakdown.hra * 12)}</Text>
             </View>
+
+            <View style={styles.tableRow}>
+              <Text style={styles.tableCellLabel}>Special Allowance</Text>
+              <Text style={styles.tableCell}>{fmtMoney(data.salaryBreakdown.specialAllowance)}</Text>
+              <Text style={styles.tableCell}>{fmtMoney(data.salaryBreakdown.specialAllowance * 12)}</Text>
+            </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabel}>Bonus Amount</Text>

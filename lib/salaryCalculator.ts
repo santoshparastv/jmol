@@ -6,6 +6,7 @@ import { calculateProfessionalTax, getLWFForMonth, isESICApplicable } from './st
 export interface SalaryBreakdown {
   basic: number
   hra: number
+  specialAllowance: number
   bonusAmount: number
   grossTotalEarnings: number
   pfEmployee: number
@@ -88,133 +89,119 @@ export function calculateSalaryBreakdown(
   const employeeLWF = lwfConfig.employee
   const employerLWF = lwfConfig.employer
   
-  // Reverse calculation: We need to find Basic Salary that results in target Net Salary
-  // Using iterative approach to find the correct Basic Salary
-  
-  let basic = 10000 // Start with initial guess
-  let calculatedNet = 0
-  let iterations = 0
-  const maxIterations = 100
-  const tolerance = 1 // Acceptable difference in rupees
-  
-  while (Math.abs(calculatedNet - netSalary) > tolerance && iterations < maxIterations) {
-    // Calculate components based on Basic (matching sheet formulas exactly)
-    // HRA = 40% of Basic (from sheet: =D2/100*40, Maximum 40% of Basic Salary)
-    const hra = Math.round(basic * HRA_RATE)
-    
-    // Bonus Amount - from sheet example: 1200 is ~8.89% of 13500
-    // Using 8.89% to match the sheet example
-    const bonusAmount = Math.round(basic * BONUS_RATE)
-    
-    // Gross Total Earnings = SUM(Basic, HRA, Bonus) - from sheet: =SUM(B2:B4)
-    const grossTotalEarnings = basic + hra + bonusAmount
-    
-    // Employee PF = 12% of Basic - from sheet: =B2/100*12
-    // PF is mandatory if basic <= 15000, otherwise based on pfEnabled flag
-    // Cap at ₹1,800/month
-    const pfEmployee = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-      ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
-      : 0
-    
-    // Employee ESI = 0.75% of Basic - from sheet: =B2/100*0.75
-    // Note: Sheet shows ESI calculated on Basic (B2), not Gross (unusual but matching sheet)
-    // ESI is only if Gross < 21000 (from notes: "Up 21k Gross Salary ESIC is mandatory")
-    // Use state-wise ESIC applicability check
-    const esiEmployee = isESICApplicable(grossTotalEarnings, state)
-      ? Math.round(basic * ESI_EMPLOYEE_RATE) 
-      : 0
-    
-    // Professional Tax (calculated based on gross salary and state slabs)
-    // Employee LWF (fixed by state)
-    // Mediclaim Deduction - from sheet: 0
-    
-    // Calculate professional tax based on gross salary
-    const professionalTax = calculateProfessionalTax(grossTotalEarnings, state, month)
-    
-    // Total Deductions = SUM(PF, ESI, PT, LWF, Mediclaim) - from sheet: =SUM(B6:B10)
-    const totalDeductions = pfEmployee + esiEmployee + professionalTax + employeeLWF + 0
-    
-    // Net Salary = Gross - Deductions - from sheet: =B5-B11
-    calculatedNet = grossTotalEarnings - totalDeductions
-    
-    // Adjust Basic to get closer to target Net Salary
-    // Use a more precise adjustment factor
-    const difference = netSalary - calculatedNet
-    if (Math.abs(difference) > tolerance) {
-      // Estimate how much Basic needs to change
-      // Gross changes by ~1.489x Basic (1 + 0.40 + 0.0889)
-      // Deductions change by ~0.1275x Basic (0.12 + 0.0075 if ESI applies)
-      // Net changes by ~1.3615x Basic
-      const basicAdjustment = difference / 1.3615
-      basic += basicAdjustment
+  /**
+   * New requirement:
+   * - Basic must be 50% of Monthly CTC.
+   * - Add Special Allowance as a balancing earning so Net Salary (input) stays correct.
+   *
+   * We solve for Monthly CTC such that computed Net Salary matches the target netSalary.
+   */
+  const tolerance = 1 // rupees
+
+  const computeFromMonthlyCTC = (monthlyCTC: number) => {
+    const basic = monthlyCTC * 0.5
+    const basicRounded = Math.round(basic)
+    const hra = Math.round(basicRounded * HRA_RATE)
+    const bonusAmount = Math.round(basicRounded * BONUS_RATE)
+
+    const pfApplies = pfEnabled || (enforcePfMandatory && basicRounded <= 15000)
+    const pfEmployee = pfApplies ? Math.min(PF_CAP, Math.round(basicRounded * PF_RATE)) : 0
+    const pfEmployer = pfApplies ? Math.min(PF_CAP, Math.round(basicRounded * PF_RATE)) : 0
+    const pfAdminCharge = pfApplies ? PF_ADMIN_CHARGE : 0
+    const pfEDLICharge = pfApplies ? PF_EDLI_CHARGE : 0
+
+    // Gross depends on benefits, and employer ESI depends on gross.
+    // Iterate a few times to converge for this monthly CTC.
+    let gross = basicRounded + hra + bonusAmount
+    let esiEmployer = 0
+    let totalBenefits = 0
+    for (let i = 0; i < 12; i++) {
+      const esicApplies = isESICApplicable(gross, state)
+      esiEmployer = esicApplies ? Math.round(gross * ESI_EMPLOYER_RATE) : 0
+      totalBenefits = pfEmployer + pfAdminCharge + pfEDLICharge + esiEmployer + employerLWF
+      const newGross = monthlyCTC - totalBenefits
+      if (Math.abs(newGross - gross) < 0.5) {
+        gross = newGross
+        break
+      }
+      gross = newGross
     }
-    
-    // Ensure Basic doesn't go negative or too low
-    basic = Math.max(basic, 5000)
-    
-    iterations++
+
+    // Special Allowance is the balancing component so earnings sum to gross.
+    // (Expected to be positive given basic is 50% of CTC.)
+    const specialAllowance = Math.round(gross - (basicRounded + hra + bonusAmount))
+    const grossTotalEarnings = basicRounded + hra + specialAllowance + bonusAmount
+
+    // Employee deductions calculated against final gross (and ESI applicability based on gross).
+    const esicAppliesFinal = isESICApplicable(grossTotalEarnings, state)
+    const esiEmployee = esicAppliesFinal ? Math.round(basicRounded * ESI_EMPLOYEE_RATE) : 0
+    const professionalTax = calculateProfessionalTax(grossTotalEarnings, state, month)
+    const medicclaimDeduction = 0
+    const totalDeductions = pfEmployee + esiEmployee + professionalTax + employeeLWF + medicclaimDeduction
+    const finalNetSalary = grossTotalEarnings - totalDeductions
+
+    return {
+      basic: basicRounded,
+      hra,
+      specialAllowance,
+      bonusAmount,
+      grossTotalEarnings,
+      pfEmployee,
+      esiEmployee,
+      professionalTax,
+      medicclaimDeduction,
+      totalDeductions,
+      netSalary: Math.round(finalNetSalary),
+      pfEmployer,
+      pfAdminCharge,
+      pfEDLICharge,
+      esiEmployer,
+      totalBenefits,
+      monthlyCTC,
+    }
   }
-  
-  // Final calculations with the found Basic Salary
-  const hra = Math.round(basic * HRA_RATE)
-  const bonusAmount = Math.round(basic * BONUS_RATE)
-  const grossTotalEarnings = basic + hra + bonusAmount
-  
-  // Employee deductions
-  // PF is mandatory if basic <= 15000, otherwise based on pfEnabled flag
-  const pfEmployee = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-    ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
-    : 0
-  const esiEmployee = isESICApplicable(grossTotalEarnings, state)
-    ? Math.round(basic * ESI_EMPLOYEE_RATE) 
-    : 0
-  const medicclaimDeduction = 0
-  
-  // Calculate professional tax based on final gross salary
-  const professionalTax = calculateProfessionalTax(grossTotalEarnings, state, month)
-  
-  const totalDeductions = pfEmployee + esiEmployee + professionalTax + employeeLWF + medicclaimDeduction
-  const finalNetSalary = grossTotalEarnings - totalDeductions
-  
-  // Employer contributions
-  // PF employer contribution only if PF is enabled
-  const pfEmployer = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-    ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
-    : 0
-  const pfAdminCharge = (pfEnabled || (enforcePfMandatory && basic <= 15000)) ? PF_ADMIN_CHARGE : 0 // Fixed: 55
-  const pfEDLICharge = (pfEnabled || (enforcePfMandatory && basic <= 15000)) ? PF_EDLI_CHARGE : 0 // Fixed: 55
-  
-  // Employer ESI = 3.25% of Gross (from sheet: =B5/100*3.25)
-  const esiEmployer = isESICApplicable(grossTotalEarnings, state)
-    ? Math.round(grossTotalEarnings * ESI_EMPLOYER_RATE) 
-    : 0
-  
-  const totalBenefits = pfEmployer + pfAdminCharge + pfEDLICharge + esiEmployer + employerLWF
-  
-  // CTC = Gross + Benefits (Annual)
-  const monthlyCTC = grossTotalEarnings + totalBenefits
-  const annualCTC = monthlyCTC * 12
-  
+
+  // Solve monthly CTC so that net salary matches target.
+  let monthlyCTC = Math.max(netSalary * 1.7, 15000)
+  let best = computeFromMonthlyCTC(monthlyCTC)
+
+  for (let iter = 0; iter < 40; iter++) {
+    const diff = netSalary - best.netSalary
+    if (Math.abs(diff) <= tolerance) break
+
+    const delta = Math.max(100, monthlyCTC * 0.01)
+    const up = computeFromMonthlyCTC(monthlyCTC + delta)
+    const slope = (up.netSalary - best.netSalary) / delta
+
+    // If slope is bad (should be >0), fallback to conservative step.
+    const step = slope > 0.0001 ? diff / slope : diff * 1.5
+    monthlyCTC = Math.max(10000, monthlyCTC + step)
+    best = computeFromMonthlyCTC(monthlyCTC)
+  }
+
+  const annualCTC = best.monthlyCTC * 12
+
   return {
-    basic: Math.round(basic),
-    hra: Math.round(hra),
-    bonusAmount: Math.round(bonusAmount),
-    grossTotalEarnings: Math.round(grossTotalEarnings),
-    pfEmployee: Math.round(pfEmployee),
-    esiEmployee: Math.round(esiEmployee),
-    professionalTax: Math.round(professionalTax),
+    basic: best.basic,
+    hra: best.hra,
+    specialAllowance: best.specialAllowance,
+    bonusAmount: best.bonusAmount,
+    grossTotalEarnings: best.grossTotalEarnings,
+    pfEmployee: best.pfEmployee,
+    esiEmployee: best.esiEmployee,
+    professionalTax: Math.round(best.professionalTax),
     // LWF can be fractional for some states (e.g., Delhi ₹2.25); preserve 2 decimals.
     employeeLWF: Math.round(employeeLWF * 100) / 100,
-    medicclaimDeduction: Math.round(medicclaimDeduction),
-    totalDeductions: Math.round(totalDeductions),
-    netSalary: Math.round(finalNetSalary),
+    medicclaimDeduction: Math.round(best.medicclaimDeduction),
+    totalDeductions: Math.round(best.totalDeductions),
+    netSalary: Math.round(best.netSalary),
     variableIncentive: 0,
-    pfEmployer: Math.round(pfEmployer),
-    pfAdminCharge: Math.round(pfAdminCharge),
-    pfEDLICharge: Math.round(pfEDLICharge),
-    esiEmployer: Math.round(esiEmployer),
+    pfEmployer: best.pfEmployer,
+    pfAdminCharge: best.pfAdminCharge,
+    pfEDLICharge: best.pfEDLICharge,
+    esiEmployer: Math.round(best.esiEmployer),
     employerLWF: Math.round(employerLWF * 100) / 100,
-    totalBenefits: Math.round(totalBenefits),
+    totalBenefits: Math.round(best.totalBenefits),
     ctc: Math.round(annualCTC),
     travelAllowance: undefined, // Only set if provided by user
   }
