@@ -1,0 +1,114 @@
+{
+  "Andhra Pradesh": {
+    "employee": 6,
+    "employer": 2,
+    "frequency": "yearly",
+    "raw_employee": 70,
+    "raw_employer": 30
+  },
+  "Chandigarh": {
+    "employee": 20,
+    "employer": 5,
+    "frequency": "monthly",
+    "raw_employee": 20,
+    "raw_employer": 5
+  },
+  "Chhattisgarh": {
+    "employee": 4,
+    "employer": 1,
+    "frequency": "half yearly",
+    "raw_employee": 45,
+    "raw_employer": 15
+  },
+  "Delhi": {
+    "employee": 0,
+    "employer": 0,
+    "frequency": "half yearly",
+    "raw_employee": 2.25,
+    "raw_employer": 0.75
+  },
+  "Goa": {
+    "employee": 15,
+    "employer": 5,
+    "frequency": "half yearly",
+    "raw_employee": 180,
+    "raw_employer": 60
+  },
+  "Gujarat": {
+    "employee": 1,
+    "employer": 0,
+    "frequency": "half yearly",
+    "raw_employee": 12,
+    "raw_employer": 6
+  },
+  "Haryana": {
+    "employee": 50,
+    "employer": 24,
+    "frequency": "monthly",
+    "raw_employee": 50,
+    "raw_employer": 24
+  },
+  "Karnataka": {
+    "employee": 3,
+    "employer": 2,
+    "frequency": "yearly",
+    "raw_employee": 40,
+    "raw_employer": 20
+  },
+  "Kerala": {
+    "employee": 4,
+    "employer": 4,
+    "frequency": "half yearly",
+    "raw_employee": 45,
+    "raw_employer": 45
+  },
+  "Madhya Pradesh": {
+    "employee": 2,
+    "employer": 1,
+    "frequency": "half yearly",
+    "raw_employee": 30,
+    "raw_employer": 10
+  },
+  "Maharashtra": {
+    "employee": 3,
+    "employer": 1,
+    "frequency": "half yearly",
+    "raw_employee": 36,
+    "raw_employer": 12
+  },
+  "Odisha": {
+    "employee": 2,
+    "employer": 1,
+    "frequency": "half yearly",
+    "raw_employee": 20,
+    "raw_employer": 10
+  },
+  "Punjab": {
+    "employee": 20,
+    "employer": 5,
+    "frequency": "monthly",
+    "raw_employee": 20,
+    "raw_employer": 5
+  },
+  "Tamil Nadu": {
+    "employee": 3,
+    "employer": 2,
+    "frequency": "yearly",
+    "raw_employee": 40,
+    "raw_employer": 20
+  },
+  "Telangana": {
+    "employee": 0,
+    "employer": 0,
+    "frequency": "yearly",
+    "raw_employee": 5,
+    "raw_employer": 2
+  },
+  "West Bengal": {
+    "employee": 1,
+    "employer": 0,
+    "frequency": "half yearly",
+    "raw_employee": 15,
+    "raw_employer": 3
+  }
+}

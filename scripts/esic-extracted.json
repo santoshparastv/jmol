@@ -1,0 +1,126 @@
+{
+  "Andhra Pradesh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Arunachal Pradesh": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Assam": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Bihar": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Chandigarh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Chhattisgarh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Delhi": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Goa": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Gujarat": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Haryana": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Himachal Pradesh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Jharkhand": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Karnataka": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Kerala": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Madhya Pradesh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Maharashtra": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Manipur": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Meghalaya": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Mizoram": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Nagaland": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Odisha": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Puducherry": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Punjab": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Rajasthan": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Sikkim": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Tamil Nadu": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Telangana": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Tripura": {
+    "applicable": false,
+    "threshold": 21000
+  },
+  "Uttar Pradesh": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "Uttarakhand": {
+    "applicable": true,
+    "threshold": 21000
+  },
+  "West Bengal": {
+    "applicable": true,
+    "threshold": 21000
+  }
+}
