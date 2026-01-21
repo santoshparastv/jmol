@@ -229,6 +229,18 @@ const styles = StyleSheet.create({
     lineHeight: 1.25,
     textAlign: 'center',
   },
+  tableCellExtraBold: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingHorizontal: 5,
+    fontSize: 10,
+    borderRight: '1 solid #000',
+    fontFamily: 'Helvetica-Bold',
+    fontWeight: 900,
+    letterSpacing: 0.2,
+    lineHeight: 1.25,
+    textAlign: 'center',
+  },
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
@@ -468,8 +480,8 @@ const OfferLetterDocument = ({ data }: { data: OfferLetterData }) => {
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabelBold}>Gross Total Earnings (A)</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.grossTotalEarnings)}</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.grossTotalEarnings * 12)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.grossTotalEarnings)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.grossTotalEarnings * 12)}</Text>
             </View>
             
             <View style={styles.tableRow}>
@@ -504,14 +516,14 @@ const OfferLetterDocument = ({ data }: { data: OfferLetterData }) => {
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabelBold}>Total Deductions (B)</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.totalDeductions)}</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.totalDeductions * 12)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.totalDeductions)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.totalDeductions * 12)}</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabelBold}>Net Salary (A-B)</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.netSalary)}</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.netSalary * 12)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.netSalary)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.netSalary * 12)}</Text>
             </View>
             
             <View style={styles.tableRow}>
@@ -552,14 +564,14 @@ const OfferLetterDocument = ({ data }: { data: OfferLetterData }) => {
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabelBold}>Total Benefits (C)</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.totalBenefits)}</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.totalBenefits * 12)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.totalBenefits)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.totalBenefits * 12)}</Text>
             </View>
             
             <View style={[styles.tableRow, { borderTop: '1 solid #000' }]}>
               <Text style={styles.tableCellLabelBold}>Total Cost to Company (A+C)</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.ctc / 12)}</Text>
-              <Text style={styles.tableCellBold}>{fmtMoney(data.salaryBreakdown.ctc)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.ctc / 12)}</Text>
+              <Text style={styles.tableCellExtraBold}>{fmtMoney(data.salaryBreakdown.ctc)}</Text>
             </View>
 
             {/* Repeat header at bottom (as in reference SS2) */}
