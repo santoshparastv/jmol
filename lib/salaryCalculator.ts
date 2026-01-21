@@ -46,6 +46,9 @@ export interface SalaryCalculatorOptions {
 const PF_ADMIN_CHARGE = 55
 const PF_EDLI_CHARGE = 55
 
+// PF cap (monthly). Standard EPF wage ceiling is ₹15,000 => 12% = ₹1,800.
+const PF_CAP = 1800
+
 // From sheet example: 1200 is ~8.89% of 13500
 const BONUS_RATE = 0.0889
 const HRA_RATE = 0.4
@@ -61,7 +64,7 @@ const ESI_EMPLOYER_RATE = 0.0325
  * - Basic Salary: Input or calculated
  * - HRA: 40% of Basic Salary (Maximum 40% of Basic)
  * - Bonus Amount: Fixed or calculated
- * - Employee PF: 12% of Basic (sheet shows =B2/100*12; no cap)
+ * - Employee PF: 12% of Basic (capped at ₹1,800/month when applicable)
  * - Employee ESI: 0.75% of Basic (if Gross < 21000)
  * - Employer ESI: 3.25% of Gross (if Gross < 21000)
  * - Professional Tax: Fixed by state (200 for most states)
@@ -108,9 +111,9 @@ export function calculateSalaryBreakdown(
     
     // Employee PF = 12% of Basic - from sheet: =B2/100*12
     // PF is mandatory if basic <= 15000, otherwise based on pfEnabled flag
-    // No cap (per requirement / sheet style formula)
+    // Cap at ₹1,800/month
     const pfEmployee = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-      ? Math.round(basic * PF_RATE) 
+      ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
       : 0
     
     // Employee ESI = 0.75% of Basic - from sheet: =B2/100*0.75
@@ -160,7 +163,7 @@ export function calculateSalaryBreakdown(
   // Employee deductions
   // PF is mandatory if basic <= 15000, otherwise based on pfEnabled flag
   const pfEmployee = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-    ? Math.round(basic * PF_RATE) 
+    ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
     : 0
   const esiEmployee = isESICApplicable(grossTotalEarnings, state)
     ? Math.round(basic * ESI_EMPLOYEE_RATE) 
@@ -176,7 +179,7 @@ export function calculateSalaryBreakdown(
   // Employer contributions
   // PF employer contribution only if PF is enabled
   const pfEmployer = (pfEnabled || (enforcePfMandatory && basic <= 15000)) 
-    ? Math.round(basic * PF_RATE) 
+    ? Math.min(PF_CAP, Math.round(basic * PF_RATE))
     : 0
   const pfAdminCharge = (pfEnabled || (enforcePfMandatory && basic <= 15000)) ? PF_ADMIN_CHARGE : 0 // Fixed: 55
   const pfEDLICharge = (pfEnabled || (enforcePfMandatory && basic <= 15000)) ? PF_EDLI_CHARGE : 0 // Fixed: 55
