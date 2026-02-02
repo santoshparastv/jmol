@@ -88,7 +88,7 @@ export function calculateSalaryBreakdown(
   const lwfConfig = getLWFForMonth(state, month)
   const employeeLWF = lwfConfig.employee
   const employerLWF = lwfConfig.employer
-  
+
   /**
    * New requirement:
    * - Basic must be 50% of Monthly CTC.
@@ -177,6 +177,14 @@ export function calculateSalaryBreakdown(
     const step = slope > 0.0001 ? diff / slope : diff * 1.5
     monthlyCTC = Math.max(10000, monthlyCTC + step)
     best = computeFromMonthlyCTC(monthlyCTC)
+  }
+
+  // Final adjustment: if net salary is off by 1–2 due to rounding, adjust special allowance so it matches exactly
+  const finalDiff = netSalary - best.netSalary
+  if (Math.abs(finalDiff) > 0 && Math.abs(finalDiff) <= 2) {
+    best.specialAllowance += Math.round(finalDiff)
+    best.grossTotalEarnings += Math.round(finalDiff)
+    best.netSalary = netSalary
   }
 
   const annualCTC = best.monthlyCTC * 12
